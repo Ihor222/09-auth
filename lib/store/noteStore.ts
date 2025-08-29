@@ -1,18 +1,24 @@
 import { create } from "zustand"; 
 import { persist } from "zustand/middleware";
-import type { NewNote } from "../api";
+
+export type NoteDraft = {
+  title: string;
+  content: string;
+  tag: "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
+};
 
 type DraftState = {
-  draft: NewNote;
-  updateDraft: (next: NewNote) => void;
+  draft: NoteDraft;
+  updateDraft: (next: NoteDraft) => void;
   resetDraft: () => void;
 };
 
-const defaultNote: NewNote = {
+const defaultNote: NoteDraft = {
   title: "",
   content: "",
   tag: "Todo",
 };
+
 export const useDraftStore = create<DraftState>()(
   persist(
     (set) => ({

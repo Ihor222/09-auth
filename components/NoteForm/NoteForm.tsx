@@ -3,7 +3,7 @@
 import css from "./NoteForm.module.css";
 import { useId, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import { createNote, type NewNote } from "@/lib/api";
+import { clientApi } from "@/lib/api/clientApi"; // <-- оновлено
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
@@ -41,16 +41,15 @@ export default function NoteForm({ onCloseModal }: NoteFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // глобальний драфт
   const draft = useDraftStore((state) => state.draft);
   const updateDraft = useDraftStore((state) => state.updateDraft);
   const resetDraft = useDraftStore((state) => state.resetDraft);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (note: NewNote) => createNote(note),
+    mutationFn: (note: FormValues) => clientApi.createNote(note), // <-- через clientApi
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      resetDraft(); // скидаємо глобальний драфт після успішного створення
+      resetDraft();
       onCloseModal ? onCloseModal() : router.back();
     },
   });
@@ -60,7 +59,7 @@ export default function NoteForm({ onCloseModal }: NoteFormProps) {
   };
 
   const handleCancel = () => {
-    resetDraft(); // якщо відміна, теж можна скинути
+    resetDraft();
     onCloseModal ? onCloseModal() : router.back();
   };
 
@@ -72,7 +71,6 @@ export default function NoteForm({ onCloseModal }: NoteFormProps) {
       onSubmit={onSubmit}
     >
       {({ values, handleChange }) => {
-        // синхронізація з глобальним драфтом
         useEffect(() => {
           updateDraft(values);
         }, [values, updateDraft]);
