@@ -3,7 +3,7 @@
 import css from "./NoteForm.module.css";
 import { useId, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import { clientApi } from "@/lib/api/clientApi"; // <-- оновлено
+import { createNote } from "@/lib/api/clientApi";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
@@ -46,13 +46,14 @@ export default function NoteForm({ onCloseModal }: NoteFormProps) {
   const resetDraft = useDraftStore((state) => state.resetDraft);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (note: FormValues) => clientApi.createNote(note), // <-- через clientApi
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      resetDraft();
-      onCloseModal ? onCloseModal() : router.back();
-    },
-  });
+  mutationFn: (note: FormValues) => createNote(note),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["notes"] });
+    resetDraft();
+    onCloseModal ? onCloseModal() : router.back();
+  },
+});
+
 
   const onSubmit = (values: FormValues) => {
     mutate(values);

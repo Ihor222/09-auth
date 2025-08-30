@@ -1,4 +1,4 @@
-import { fetchNoteById } from "@/lib/api/api";
+import { fetchNoteByIdServer } from "@/lib/api/serverApi";
 import { QueryClient, dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import NoteDetailsClient from "./NoteDetails.client";
 import { Metadata } from "next";
@@ -12,7 +12,7 @@ interface MetadataProps {
 
 export const generateMetadata = async ({ params }: MetadataProps): Promise<Metadata> => {
     const { id } = await params;
-    const data = await fetchNoteById(id);
+    const data = await fetchNoteByIdServer(id);
 
     return {
         title: `Note: ${data.title}`,
@@ -47,7 +47,7 @@ const NoteDetails = async ({ params }: Props) => {
     try {
       await queryClient.prefetchQuery({
         queryKey: ["note", id],
-        queryFn: () => fetchNoteById(id),
+        queryFn: () => fetchNoteByIdServer(id),
       });
     } catch (error) {
       console.error("Помилка завантаження нотатки:", error);
