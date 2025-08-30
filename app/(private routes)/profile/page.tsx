@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import { serverApi } from "@/lib/api/serverApi";
-import css from "./profile.module.css";
+import { getProfileServer } from "@/lib/api/serverApi"; // <-- змінив імпорт
+import css from "./ProfilePage.module.css";
 
 export const metadata: Metadata = {
   title: "Profile | NoteHub",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
-  const profile = await serverApi.getProfile();
+  const profile = await getProfileServer();
 
   return (
     <main className={css.mainContent}>

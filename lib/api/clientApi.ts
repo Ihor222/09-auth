@@ -2,7 +2,6 @@
 
 import { api } from "./api";
 
-// --- методи для експорту окремо ---
 export const signUp = async (data: { email: string; password: string }) => {
   const { data: user } = await api.post("/auth/register", data, {
     withCredentials: true,

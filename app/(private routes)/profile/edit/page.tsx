@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import css from "./EditProfile.module.css";
-import { clientApi } from "@/lib/api/clientApi";
+import css from "./EditProfilePage.module.css";
+import { updateProfile } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
 
 export default function EditProfilePage() {
@@ -26,7 +26,7 @@ export default function EditProfilePage() {
     setError(null);
 
     try {
-      const updatedUser = await clientApi.updateProfile({ username, email: user!.email });
+      const updatedUser = await updateProfile({ username, email: user!.email });
       setUser(updatedUser); 
       router.push("/profile"); 
     } catch (err: any) {
