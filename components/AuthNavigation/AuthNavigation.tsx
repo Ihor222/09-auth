@@ -4,16 +4,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import css from "./AuthNavigation.module.css";
 import { useAuthStore } from "@/lib/store/authStore";
+import { logout } from "@/lib/api/clientApi"; 
 
 export default function AuthNavigation() {
   const router = useRouter();
-
-  // Отримуємо стан авторизації і методи зі стору
   const { isAuthenticated, user, clearIsAuthenticated } = useAuthStore();
 
-  const handleLogout = () => {
-    clearIsAuthenticated(); // очищаємо стан авторизації
-    router.push("/sign-in"); // редірект на логін
+  const handleLogout = async () => {
+    try {
+      await logout(); // викликаємо бекенд для виходу
+      clearIsAuthenticated(); // очищаємо стан
+      router.push("/sign-in"); // редірект
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (

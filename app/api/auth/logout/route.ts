@@ -1,49 +1,39 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { api } from "../../api";
-import { isAxiosError } from "axios";
-import { logErrorResponse } from "../../_utils/utils";
+import { NextResponse } from 'next/server';
+import { api } from '../../api';
+import { cookies } from 'next/headers';
+import { isAxiosError } from 'axios';
+import { logErrorResponse } from '../../_utils/utils';
 
 export async function POST() {
-  const cookieJar = cookies();
-
   try {
-    const access = (await cookieJar).get("accessToken")?.value;
-    const refresh = (await cookieJar).get("refreshToken")?.value;
+    const cookiesData = await cookies();
 
-    if (!access || !refresh) {
+    const accessToken = cookiesData.get('accessToken')?.value;
+    const refreshToken = cookiesData.get('refreshToken')?.value;
+
+    await api.post('/auth/logout', {}, {
+      headers: {
+        Cookie: `accessToken=${accessToken}; refreshToken=${refreshToken}`,
+      },
+    });
+
+    // спочатку чистимо refreshToken, потім accessToken
+    cookiesData.delete('refreshToken');
+    cookiesData.delete('accessToken');
+
+    return NextResponse.json({ message: 'Successfully logged out' }, { status: 200 });
+  } catch (error) {
+    if (isAxiosError(error)) {
+      logErrorResponse(error.response?.data);
       return NextResponse.json(
-        { error: "Missing tokens" },
-        { status: 400 }
+        { error: error.message, details: error.response?.data },
+        { status: error.response?.status ?? 400 }
       );
     }
 
-    await api.post(
-      "auth/logout",
-      {},
-      {
-        headers: {
-          Cookie: `accessToken=${access}; refreshToken=${refresh}`,
-        },
-      }
-    );
-
-    (await cookieJar).delete("accessToken");
-    (await cookieJar).delete("refreshToken");
-
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (err) {
-    if (isAxiosError(err)) {
-      logErrorResponse(err.response?.data);
-      return NextResponse.json(
-        { error: err.message, details: err.response?.data },
-        { status: err.response?.status ?? 500 }
-      );
-    }
-
-    logErrorResponse({ message: (err as Error).message });
+    logErrorResponse({ message: (error as Error).message });
     return NextResponse.json(
-      { error: "Unexpected server error" },
+      { error: 'Unexpected server error' },
       { status: 500 }
     );
   }

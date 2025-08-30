@@ -27,28 +27,28 @@
       "static/chunks/main-app.js",
       "static/chunks/app/@modal/default.js"
     ],
-    "/notes/filter/layout": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/notes/filter/layout.css",
-      "static/chunks/app/notes/filter/layout.js"
+      "static/css/app/_not-found/page.css",
+      "static/chunks/app/_not-found/page.js"
     ],
-    "/notes/filter/[...slug]/error": [
+    "/(auth routes)/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/notes/filter/[...slug]/error.js"
+      "static/chunks/app/(auth routes)/layout.js"
     ],
-    "/notes/filter/[...slug]/page": [
+    "/(auth routes)/sign-in/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/notes/filter/[...slug]/page.css",
-      "static/chunks/app/notes/filter/[...slug]/page.js"
+      "static/css/app/(auth routes)/sign-in/page.css",
+      "static/chunks/app/(auth routes)/sign-in/page.js"
     ],
-    "/notes/filter/@sidebar/default": [
+    "/(auth routes)/sign-up/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/notes/filter/@sidebar/default.css",
-      "static/chunks/app/notes/filter/@sidebar/default.js"
+      "static/css/app/(auth routes)/sign-up/page.css",
+      "static/chunks/app/(auth routes)/sign-up/page.js"
     ]
   }
 }

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
+import { getProfile } from "@/lib/api/clientApi";
 
 export interface AuthProviderProps {
   children: React.ReactNode;
@@ -14,10 +15,9 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     async function initializeAuth() {
       try {
-        const res = await fetch("/api/users/me", { cache: "no-store" });
+        const user = await getProfile(); 
 
-        if (res.ok) {
-          const user = await res.json();
+        if (user) {
           setUser(user);
         } else {
           clearIsAuthenticated();

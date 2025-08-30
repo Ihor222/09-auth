@@ -26,7 +26,8 @@ export default function EditProfilePage() {
     setError(null);
 
     try {
-      const updatedUser = await updateProfile({ username, email: user!.email });
+      const updatedUser = await updateProfile({ username });
+
       setUser(updatedUser); 
       router.push("/profile"); 
     } catch (err: any) {

@@ -1,48 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { api } from '../../api';
 import { parse } from 'cookie';
 import { isAxiosError } from 'axios';
-import { api } from '../../api';
 import { logErrorResponse } from '../../_utils/utils';
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const refreshToken = (await cookieStore).get('refreshToken')?.value;
+    // Отримуємо cookieStore (асинхронно!)
+    const cookieStore = await cookies();
+    const refreshToken = cookieStore.get('refreshToken')?.value;
     const next = request.nextUrl.searchParams.get('next') || '/';
 
     if (refreshToken) {
-      const cookieHeader = (await cookieStore).getAll().map(c => `${c.name}=${c.value}`).join('; ');
-
+      // Запит до бекенду
       const apiRes = await api.get('auth/session', {
-        headers: { Cookie: cookieHeader },
+        headers: {
+          Cookie: cookieStore.toString(),
+        },
       });
 
       const setCookie = apiRes.headers['set-cookie'];
       if (setCookie) {
         const cookieArray = Array.isArray(setCookie) ? setCookie : [setCookie];
         let accessToken = '';
-        let newRefreshToken = '';
+        let refreshToken = '';
 
+        // Парсимо куки
         for (const cookieStr of cookieArray) {
           const parsed = parse(cookieStr);
           if (parsed.accessToken) accessToken = parsed.accessToken;
-          if (parsed.refreshToken) newRefreshToken = parsed.refreshToken;
+          if (parsed.refreshToken) refreshToken = parsed.refreshToken;
         }
 
-        const response = NextResponse.redirect(new URL(next, request.url));
-        if (accessToken) response.cookies.set('accessToken', accessToken, { httpOnly: true, path: '/' });
-        if (newRefreshToken) response.cookies.set('refreshToken', newRefreshToken, { httpOnly: true, path: '/' });
-        return response;
+        // Оновлюємо куки
+        if (accessToken) cookieStore.set('accessToken', accessToken);
+        if (refreshToken) cookieStore.set('refreshToken', refreshToken);
+
+        // Редірект з новими куками
+        return NextResponse.redirect(new URL(next, request.url), {
+          headers: {
+            'set-cookie': cookieStore.toString(),
+          },
+        });
       }
     }
 
+    // Якщо нема refreshToken
     return NextResponse.redirect(new URL('/sign-in', request.url));
   } catch (error) {
+    // Обробка помилок
     if (isAxiosError(error)) {
       logErrorResponse(error.response?.data);
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
+
     logErrorResponse({ message: (error as Error).message });
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

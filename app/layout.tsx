@@ -3,6 +3,7 @@ import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
 import { Roboto } from "next/font/google";
+import AuthProvider from "@/components/AuthProvider/AuthProvider";
 
 export const metadata: Metadata = {
   title: "NoteHub – Simple Notes Manager",
@@ -41,12 +42,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${roboto.variable} ${roboto.className}`}>
-        <TanStackProvider>
-          <Header />
-          <main>{children}</main>
-          {modal}
-          <Footer />
-        </TanStackProvider>
+        <AuthProvider>
+          <TanStackProvider>
+            <Header />
+            <main>{children}</main>
+            {modal}
+            <Footer />
+          </TanStackProvider>
+        </AuthProvider>
       </body>
     </html>
   );

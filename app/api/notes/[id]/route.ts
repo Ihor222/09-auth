@@ -1,65 +1,91 @@
-import { cookies } from "next/headers";
-import { api } from "../../api";
 import { NextResponse } from "next/server";
+import { api } from "../../api";
+import { cookies } from "next/headers";
 import { isAxiosError } from "axios";
 import { logErrorResponse } from "../../_utils/utils";
 
-type Props = {
+type RouteProps = {
   params: Promise<{ id: string }>;
 };
 
-async function withErrorHandler<T>(fn: () => Promise<T>) {
+export async function GET(_req: Request, { params }: RouteProps) {
   try {
-    return await fn();
-  } catch (error) {
-    if (isAxiosError(error)) {
-      logErrorResponse(error.response?.data);
+    const cookieJar = await cookies();
+    const { id } = await params;
+
+    const response = await api.get(`/notes/${id}`, {
+      headers: { Cookie: cookieJar.toString() },
+    });
+
+    return NextResponse.json(response.data, { status: response.status });
+  } catch (err) {
+    if (isAxiosError(err)) {
+      logErrorResponse(err.response?.data);
       return NextResponse.json(
-        { error: error.message, response: error.response?.data },
-        { status: error.response?.status ?? 500 }
+        { error: err.message, details: err.response?.data },
+        { status: err.status }
       );
     }
-    logErrorResponse({ message: (error as Error).message });
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+
+    logErrorResponse({ message: (err as Error).message });
+    return NextResponse.json(
+      { error: "Unexpected server error" },
+      { status: 500 }
+    );
   }
 }
 
-export async function GET(request: Request, { params }: Props) {
-  return withErrorHandler(async () => {
-    const cookieStore = await cookies();
+export async function DELETE(_req: Request, { params }: RouteProps) {
+  try {
+    const cookieJar = await cookies();
     const { id } = await params;
 
-    const res = await api.get(`/notes/${id}`, {
-      headers: { Cookie: cookieStore.toString() },
+    const response = await api.delete(`/notes/${id}`, {
+      headers: { Cookie: cookieJar.toString() },
     });
 
-    return NextResponse.json(res.data, { status: res.status });
-  });
+    return NextResponse.json(response.data, { status: response.status });
+  } catch (err) {
+    if (isAxiosError(err)) {
+      logErrorResponse(err.response?.data);
+      return NextResponse.json(
+        { error: err.message, details: err.response?.data },
+        { status: err.status }
+      );
+    }
+
+    logErrorResponse({ message: (err as Error).message });
+    return NextResponse.json(
+      { error: "Unexpected server error" },
+      { status: 500 }
+    );
+  }
 }
 
-export async function DELETE(request: Request, { params }: Props) {
-  return withErrorHandler(async () => {
-    const cookieStore = await cookies();
+export async function PATCH(_req: Request, { params }: RouteProps) {
+  try {
+    const cookieJar = await cookies();
     const { id } = await params;
+    const updateData = await _req.json();
 
-    const res = await api.delete(`/notes/${id}`, {
-      headers: { Cookie: cookieStore.toString() },
+    const response = await api.patch(`/notes/${id}`, updateData, {
+      headers: { Cookie: cookieJar.toString() },
     });
 
-    return NextResponse.json(res.data, { status: res.status });
-  });
-}
+    return NextResponse.json(response.data, { status: response.status });
+  } catch (err) {
+    if (isAxiosError(err)) {
+      logErrorResponse(err.response?.data);
+      return NextResponse.json(
+        { error: err.message, details: err.response?.data },
+        { status: err.status }
+      );
+    }
 
-export async function PATCH(request: Request, { params }: Props) {
-  return withErrorHandler(async () => {
-    const cookieStore = await cookies();
-    const { id } = await params;
-    const body = await request.json();
-
-    const res = await api.patch(`/notes/${id}`, body, {
-      headers: { Cookie: cookieStore.toString() },
-    });
-
-    return NextResponse.json(res.data, { status: res.status });
-  });
+    logErrorResponse({ message: (err as Error).message });
+    return NextResponse.json(
+      { error: "Unexpected server error" },
+      { status: 500 }
+    );
+  }
 }

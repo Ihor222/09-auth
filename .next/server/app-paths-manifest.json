@@ -1,4 +1,6 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
   "/page": "app/page.js",
-  "/notes/filter/[...slug]/page": "app/notes/filter/[...slug]/page.js"
+  "/(auth routes)/sign-in/page": "app/(auth routes)/sign-in/page.js",
+  "/(auth routes)/sign-up/page": "app/(auth routes)/sign-up/page.js"
 }

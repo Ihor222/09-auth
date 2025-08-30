@@ -1,25 +1,29 @@
 import { cookies } from "next/headers";
 import { api } from "./api";
+import type { Note } from "@/types/note";
+import type { User } from "@/types/user";
 
-// --- окремі експортовані методи ---
-export const getNotesServer = async () => {
-  const cookieStore = cookies();
+// --- отримати список нотаток ---
+export const getNotesServer = async (): Promise<Note[]> => {
+  const cookieStore = await cookies();
   const { data } = await api.get("/notes", {
     headers: { Cookie: cookieStore.toString() },
   });
   return data;
 };
 
-export const getProfileServer = async () => {
-  const cookieStore = cookies();
-  const { data } = await api.get("/users/profile", {
+// --- отримати профіль користувача ---
+export const getProfileServer = async (): Promise<User> => {
+  const cookieStore = await cookies();
+  const { data } = await api.get("/users/me", {
     headers: { Cookie: cookieStore.toString() },
   });
   return data;
 };
 
+// --- перевірка сесії ---
 export const checkServerSession = async () => {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const response = await api.get("/auth/session", {
     headers: { Cookie: cookieStore.toString() },
     validateStatus: () => true,
@@ -27,15 +31,11 @@ export const checkServerSession = async () => {
   return response;
 };
 
-export const fetchNoteByIdServer = async (id: string) => {
-  try {
-    const cookieStore = cookies();
-    const { data } = await api.get(`/notes/${id}`, {
-      headers: { Cookie: cookieStore.toString() },
-    });
-    return data;
-  } catch (error) {
-    throw error;
-  }
+// --- отримати нотатку за id ---
+export const fetchNoteByIdServer = async (id: string): Promise<Note> => {
+  const cookieStore = await cookies();
+  const { data } = await api.get(`/notes/${id}`, {
+    headers: { Cookie: cookieStore.toString() },
+  });
+  return data;
 };
-
