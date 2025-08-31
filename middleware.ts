@@ -57,6 +57,7 @@ export async function middleware(request: NextRequest) {
     });
     return redResponse;
   }
+  
 
   return response;
 }
