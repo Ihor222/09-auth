@@ -3,7 +3,6 @@ import { api } from "./api";
 import type { Note } from "@/types/note";
 import type { User } from "@/types/user";
 
-// --- отримати список нотаток ---
 export const getNotesServer = async (): Promise<Note[]> => {
   const cookieStore = await cookies();
   const { data } = await api.get("/notes", {
@@ -12,7 +11,6 @@ export const getNotesServer = async (): Promise<Note[]> => {
   return data;
 };
 
-// --- отримати профіль користувача ---
 export const getProfileServer = async (): Promise<User> => {
   const cookieStore = await cookies();
   const { data } = await api.get("/users/me", {
@@ -21,7 +19,6 @@ export const getProfileServer = async (): Promise<User> => {
   return data;
 };
 
-// --- перевірка сесії ---
 export const checkServerSession = async () => {
   const cookieStore = await cookies();
   const response = await api.get("/auth/session", {
