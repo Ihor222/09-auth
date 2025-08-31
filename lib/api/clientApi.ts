@@ -1,46 +1,81 @@
-"use client";
-
+import { Note, NoteTag } from "@/types/note";
 import { api } from "./api";
-import type { Note, NoteTag } from "@/types/note";
+import { User } from "@/types/user";
 
-// --- тип для відповіді при отриманні списку нотаток ---
+export const checkServerSession = async (
+  cookieHeader?: string
+): Promise<User | null> => {
+  try {
+    const { data } = await api.get("/auth/session", {
+      headers: { Cookie: cookieHeader || "" },
+      withCredentials: true,
+    });
+
+    return data || null;
+  } catch {
+    return null;
+  }
+};
+
+
+interface UserInfo {
+  isAuth: boolean;
+  user?: User;
+}
+
+export async function login(email: string, password: string): Promise<User> {
+  const { data } = await api.post<User>("/auth/login", { email, password });
+  return data;
+}
+
+export async function register(email: string, password: string): Promise<User> {
+  const { data } = await api.post<User>("/auth/register", { email, password });
+  return data;
+}
+
+export async function logout(): Promise<void> {
+  await api.post("/auth/logout", {}, { withCredentials: true });
+}
+
+export async function checkSession(): Promise<UserInfo> {
+  const { data } = await api.get<UserInfo>("/auth/session");
+  return data;
+}
+
+export async function getProfile(): Promise<User> {
+  const { data } = await api.get<User>("/users/me");
+  return data;
+}
+
+export async function updateUserProfile(payload: Partial<User>): Promise<User> {
+  const { data } = await api.patch<User>("/users/me", payload);
+  return data;
+}
+
+export interface FetchNotesParams {
+  page: number;
+  perPage?: number;
+  search?: string;
+  tag?: string;
+}
+
 export interface FetchNotesResponse {
   notes: Note[];
   totalPages: number;
 }
 
-// --- Auth ---
-export const signUp = async <T = any>(data: { email: string; password: string }): Promise<T> => {
-  const { data: user } = await api.post("/auth/register", data);
-  return user;
-};
-
-export const signIn = async <T = any>(data: { email: string; password: string }): Promise<T> => {
-  const { data: user } = await api.post("/auth/login", data);
-  return user;
-};
-
-export const logout = async (): Promise<void> => {
-  await api.post("/auth/logout");
-};
-
-export const checkSession = async <T = any>(): Promise<T> => {
-  const { data } = await api.get("/auth/session");
+export const createNote = async (note: {
+  title: string;
+  content: string;
+  tag: NoteTag;
+}): Promise<Note> => {
+  const { data } = await api.post<Note>("/notes", note);
   return data;
 };
 
-// --- Notes ---
-export const fetchNotes = async (
-  page: number = 1,
-  search?: string,
-  tag?: NoteTag
-): Promise<FetchNotesResponse> => {
-  const params: Record<string, any> = { page };
-  if (search) params.search = search;
-  if (tag) params.tag = tag;
-
-  const { data } = await api.get<FetchNotesResponse>("/notes", { params });
-  return data;
+export const deleteNote = async (id: string) => {
+  const response = await api.delete<{ success: boolean }>(`/notes/${id}`);
+  return response.data;
 };
 
 export const fetchNoteById = async (id: string): Promise<Note> => {
@@ -48,22 +83,25 @@ export const fetchNoteById = async (id: string): Promise<Note> => {
   return data;
 };
 
-export const createNote = async (note: { title: string; content: string; tag: NoteTag }): Promise<Note> => {
-  const { data } = await api.post<Note>("/notes", note);
-  return data;
-};
+export const fetchNotes = async (
+  params: FetchNotesParams
+): Promise<FetchNotesResponse> => {
+  const { page, search, tag } = params;
 
-export const deleteNote = async (id: string): Promise<void> => {
-  await api.delete(`/notes/${id}`);
-};
+  const queryParams: Record<string, string | number> = {
+    page,
+  };
 
-// --- Profile ---
-export const getProfile = async <T = any>(): Promise<T> => {
-  const { data } = await api.get("/users/me");
-  return data;
-};
+  if (search?.trim()) {
+    queryParams.search = search;
+  }
 
-export const updateProfile = async (profile: { username: string }): Promise<any> => {
-  const { data } = await api.patch("/users/me", profile);
+  if (tag && tag !== "All") {
+    queryParams.tag = tag;
+  }
+
+  const { data } = await api.get<FetchNotesResponse>("/notes", {
+    params: queryParams,
+  });
   return data;
 };

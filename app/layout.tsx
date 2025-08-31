@@ -42,15 +42,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${roboto.variable} ${roboto.className}`}>
-        <AuthProvider>
-          <TanStackProvider>
+        <TanStackProvider>
+          <AuthProvider>
             <Header />
             <main>{children}</main>
             {modal}
             <Footer />
-          </TanStackProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </TanStackProvider>
       </body>
     </html>
   );
 }
+

@@ -1,90 +1,65 @@
 "use client";
-
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
 import css from "./EditProfilePage.module.css";
-import { updateProfile } from "@/lib/api/clientApi";
+import Image from "next/image";
 import { useAuthStore } from "@/lib/store/authStore";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { updateUserProfile } from "@/lib/api/clientApi";
 
-export default function EditProfilePage() {
-  const router = useRouter();
+const EditProfilePage = () => {
   const { user, setUser } = useAuthStore();
   const [username, setUsername] = useState(user?.username || "");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    if (user) {
-      setUsername(user.username);
-    }
-  }, [user]);
+  if (!user) return null;
 
-  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const updatedUser = await updateProfile({ username });
-
-      setUser(updatedUser); 
-      router.push("/profile"); 
-    } catch (err: any) {
-      setError(err.message || "Failed to update profile");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCancel = () => {
-    router.push("/profile");
-  };
-
-  if (!user) return <p className={css.loading}>Loading...</p>;
+    const updated = await updateUserProfile({ username });
+    setUser(updated);
+    router.back();
+  }
 
   return (
     <main className={css.mainContent}>
       <div className={css.profileCard}>
         <h1 className={css.formTitle}>Edit Profile</h1>
+        <Image
+          src={user.avatar}
+          alt="User Avatar"
+          width={120}
+          height={120}
+          className={css.avatar}
+        />
 
-        <div className={css.avatarWrapper}>
-          <Image
-            src={user.avatar || "/avatar-placeholder.png"}
-            alt="User Avatar"
-            width={120}
-            height={120}
-            className={css.avatar}
-          />
-        </div>
-
-        <form className={css.profileInfo} onSubmit={handleSave}>
+        <form className={css.profileInfo} onSubmit={handleSubmit}>
           <div className={css.usernameWrapper}>
             <label htmlFor="username">Username:</label>
             <input
               id="username"
               type="text"
-              className={css.input}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required
+              className={css.input}
             />
           </div>
-
           <p>Email: {user.email}</p>
-
           <div className={css.actions}>
-            <button type="submit" className={css.saveButton} disabled={loading}>
-              {loading ? "Saving..." : "Save"}
+            <button type="submit" className={css.saveButton}>
+              Save
             </button>
-            <button type="button" className={css.cancelButton} onClick={handleCancel}>
+            <button
+              type="button"
+              className={css.cancelButton}
+              onClick={() => router.back()}
+            >
               Cancel
             </button>
           </div>
-
-          {error && <p className={css.error}>{error}</p>}
         </form>
       </div>
     </main>
   );
-}
+};
+
+export default EditProfilePage;

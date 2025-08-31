@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useAuthStore } from "@/lib/store/authStore";
-import { getProfile } from "@/lib/api/clientApi";
+import { checkSession, getProfile } from "@/lib/api/clientApi";
 
 export interface AuthProviderProps {
   children: React.ReactNode;
@@ -10,18 +10,24 @@ export interface AuthProviderProps {
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const setUser = useAuthStore((state) => state.setUser);
-  const clearIsAuthenticated = useAuthStore((state) => state.clearIsAuthenticated);
+  const clearIsAuthenticated = useAuthStore(
+    (state) => state.clearIsAuthenticated
+  );
 
   useEffect(() => {
     async function initializeAuth() {
       try {
-        const user = await getProfile(); 
+        const sessionValid = await checkSession();
 
-        if (user) {
-          setUser(user);
-        } else {
-          clearIsAuthenticated();
+        if (sessionValid) {
+          const user = await getProfile();
+          if (user) {
+            setUser(user);
+            return;
+          }
         }
+
+        clearIsAuthenticated();
       } catch (error) {
         clearIsAuthenticated();
         console.error("Auth initialization failed:", error);

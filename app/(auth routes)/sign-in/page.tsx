@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import css from "./SignInPage.module.css";
-import { signIn } from "@/lib/api/clientApi";
 import { useAuthStore } from "@/lib/store/authStore";
+import { login } from "@/lib/api/clientApi";
+import css from "./SignInPage.module.css";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -20,7 +20,7 @@ export default function SignInPage() {
     const password = formData.get("password") as string;
 
     try {
-      const user = await signIn({ email, password });
+      const user = await login(email, password);
       setUser(user); 
       router.push("/profile"); 
     } catch (err: any) {
